@@ -1,7 +1,8 @@
-from typing import Annotated, Literal
+from typing import Annotated
 
 from fastapi import FastAPI, HTTPException, Path
-from pydantic import BaseModel
+
+from schemas import HealthResponse, PedidoResponse
 
 
 app = FastAPI(
@@ -10,21 +11,6 @@ app = FastAPI(
     version="0.1.0",
 )
 
-
-class HealthResponse(BaseModel):
-    status: Literal["ok"]
-    application: str
-
-
-class PedidoResponse(BaseModel):
-    id: str
-    status: Literal["em preparo", "em entrega", "entregue"]
-
-
-PEDIDOS_FICTICIOS = {
-    "PED-001": PedidoResponse(id="PED-001", status="em preparo"),
-    "PED-002": PedidoResponse(id="PED-002", status="entregue"),
-}
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -41,9 +27,10 @@ def consultar_pedido(
     ],
 ) -> PedidoResponse:
     """Consulta um pedido fictício armazenado em memória."""
-    pedido = PEDIDOS_FICTICIOS.get(pedido_id)
+    pedido = pedido = buscar_pedido(pedido_id)
 
     if pedido is None:
         raise HTTPException(status_code=404, detail="Pedido não encontrado.")
 
     return pedido
+from repositorio_pedidos import buscar_pedido
