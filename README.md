@@ -9,6 +9,8 @@ avaliação automatizada, segurança, observabilidade, Streamlit e Docker.
 
 Projeto independente, com dados e ações fictícios, sem vínculo oficial com o iFood.
 
+![Interface Streamlit do FoodAgent AI](docs/images/foodagent-demo.png)
+
 ## Demonstrações
 
 - Consultar o status de `PED-001` no PostgreSQL.
