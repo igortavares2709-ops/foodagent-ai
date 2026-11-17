@@ -4,10 +4,22 @@
 [![Container](https://github.com/igortavares2709-ops/foodagent-ai/actions/workflows/container.yml/badge.svg)](https://github.com/igortavares2709-ops/foodagent-ai/actions/workflows/container.yml)
 
 Agente inteligente de atendimento de delivery construído como portfólio de
-AI Engineering. Combina FastAPI, PostgreSQL, RAG, LangGraph, DeepSeek opcional,
-avaliação automatizada, segurança, observabilidade, Streamlit e Docker.
+AI Builder e AI Engineering. Combina visão de produto, automação, experiência
+do usuário, FastAPI, PostgreSQL, RAG, LangGraph, avaliação, segurança,
+observabilidade, Streamlit e Docker.
 
 Projeto independente, com dados e ações fictícios, sem vínculo oficial com o iFood.
+
+## Visão AI Builder
+
+O projeto transforma uma jornada recorrente de atendimento em um protótipo
+funcional: entende a necessidade, consulta dados ou políticas, explica a
+resposta e encaminha ações sensíveis para revisão humana. A implementação
+prioriza experiência demonstrável, automação segura, métricas de qualidade e
+continuidade mesmo sem disponibilidade do provedor de LLM.
+
+Veja o [case de produto e automação](docs/case-ai-builder.md), com oportunidade,
+jornada, proposta de valor, métricas, limites e próximos experimentos.
 
 ## Demo pública
 
