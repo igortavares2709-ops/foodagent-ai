@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Callable
 from typing import Annotated
 
@@ -17,6 +18,8 @@ from schemas import (
     MetricasResponse,
     PedidoResponse,
 )
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="FoodAgent AI",
@@ -58,6 +61,7 @@ def consultar_pedido(
             detail="Consulta de pedidos temporariamente indisponível.",
         ) from None
     except ValueError:
+        logger.exception("Configuração inválida ao consultar pedido.")
         raise HTTPException(
             status_code=500,
             detail="Falha interna ao consultar o pedido.",
