@@ -1,0 +1,50 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: foodagent_test
+          POSTGRES_PASSWORD: ci-admin-ephemeral-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d foodagent_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      APP_ENV: test
+      LOG_LEVEL: INFO
+      DB_HOST: 127.0.0.1
+      DB_PORT: "5432"
+      DB_NAME: foodagent_test
+      DB_TEST_NAME: foodagent_test
+      DB_USER: foodagent_app
+      # Credenciais ficticias, usadas apenas no servico efemero deste job.
+      DB_PASSWORD: ci-app-ephemeral-only
+      CI_POSTGRES_PASSWORD: ci-admin-ephemeral-only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Prepare isolated PostgreSQL
+        run: python scripts/preparar_ci.py
+      - name: Run unit and integration tests
+        run: python -m pytest -q --integration
