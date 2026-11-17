@@ -34,10 +34,9 @@ def abrir_conexao() -> psycopg.Connection:
 def main() -> None:
     """Verifica a conexão sem mostrar credenciais."""
     try:
-        with abrir_conexao() as conexao:
-            with conexao.cursor() as cursor:
-                cursor.execute("SELECT current_database(), current_user;")
-                resultado = cursor.fetchone()
+        with abrir_conexao() as conexao, conexao.cursor() as cursor:
+            cursor.execute("SELECT current_database(), current_user;")
+            resultado = cursor.fetchone()
     except ValueError as erro:
         print(f"Erro de configuração: {erro}")
         raise SystemExit(1) from None

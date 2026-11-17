@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: foodagent-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DB_HOST
+        fromDatabase:
+          name: foodagent-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: foodagent-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: foodagent-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: foodagent-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: foodagent-db
+          property: password
+
+databases:
+  - name: foodagent-db
+    plan: free
+    databaseName: foodagent

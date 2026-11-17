@@ -1,41 +1,54 @@
 # FoodAgent AI
 
-Agente de atendimento de delivery em desenvolvimento, com Python, FastAPI,
-PostgreSQL e integracao DeepSeek. Projeto independente de portfolio voltado a
-demonstrar competencias de AI Engineering em cenarios de delivery.
-Sem vinculo oficial com o iFood.
+[![Tests](https://github.com/igortavares2709-ops/foodagent-ai/actions/workflows/tests.yml/badge.svg)](https://github.com/igortavares2709-ops/foodagent-ai/actions/workflows/tests.yml)
+[![Container](https://github.com/igortavares2709-ops/foodagent-ai/actions/workflows/container.yml/badge.svg)](https://github.com/igortavares2709-ops/foodagent-ai/actions/workflows/container.yml)
 
-## O que funciona hoje
+Agente inteligente de atendimento de delivery construído como portfólio de
+AI Engineering. Combina FastAPI, PostgreSQL, RAG, LangGraph, DeepSeek opcional,
+avaliação automatizada, segurança, observabilidade, Streamlit e Docker.
 
-- API local com documentacao OpenAPI interativa.
-- Consulta de pedidos ficticios persistidos em PostgreSQL.
-- Validacao de identificadores, resposta 404 e tratamento de indisponibilidade 503.
-- Usuario da aplicacao com permissao de leitura, sem superusuario.
-- Cliente DeepSeek com timeout, SQL separado de parametros no repositorio,
-  tratamento de falhas HTTP e testes simulados sem consumo de creditos.
-- Configuracao por variaveis de ambiente; exemplos sem segredos.
-- Testes unitarios, testes de API isolados e integracao real com banco separado.
-- Workflow de CI com PostgreSQL efemero.
+Projeto independente, com dados e ações fictícios, sem vínculo oficial com o iFood.
 
-## Arquitetura atual
+## Demonstrações
+
+- Consultar o status de `PED-001` no PostgreSQL.
+- Responder políticas fictícias com RAG e citar as fontes.
+- Simular cancelamento sem alterar dados.
+- Encaminhar ações sensíveis para revisão humana.
+- Recusar tentativas simples de revelar prompt ou segredos.
+- Executar sem saldo da DeepSeek, usando fallback determinístico.
+
+## Arquitetura
 
 ```mermaid
 flowchart LR
-    Cliente --> API["FastAPI /pedidos/{id}"]
-    API --> Dependencia["Dependencia do repositorio"]
-    Dependencia --> Repositorio["Repositorio PostgreSQL"]
-    Repositorio --> Banco[("foodagent")]
-    Testes["Testes de integracao"] --> BancoTeste[("foodagent_test")]
-    CLI["Script manual"] --> DeepSeek["API DeepSeek"]
+  UI[Streamlit] --> API[FastAPI]
+  API --> AG[Agente LangGraph]
+  AG --> SAFE[Segurança]
+  AG --> TOOLS[Ferramentas]
+  AG --> RAG[RAG vetorial]
+  TOOLS --> DB[(PostgreSQL)]
+  RAG --> DOCS[Políticas Markdown]
+  AG -. opcional .-> DS[DeepSeek]
+  API --> OBS[Logs JSON + métricas]
 ```
 
-A DeepSeek ainda nao e chamada pela rota de pedidos. O agente, o RAG e as acoes
-simuladas fazem parte das proximas etapas; nao sao apresentados como implementados.
+Detalhes em [Arquitetura](docs/arquitetura.md).
 
-## Executar no Windows
+## Endpoints
 
-Requisitos: Python 3.14, Git e PostgreSQL 17. O projeto foi desenvolvido no Windows.
-Execute cada comando separadamente no PowerShell, na raiz do repositorio.
+| Método | Rota | Finalidade |
+|---|---|---|
+| GET | `/health` | Saúde do processo |
+| GET | `/metrics` | Contadores básicos |
+| GET | `/pedidos/{id}` | Consulta pedido fictício |
+| POST | `/chat` | Conversa com o agente |
+| POST | `/acoes/cancelamento` | Simulação sem efeito real |
+| GET | `/docs` | OpenAPI interativo |
+
+## Execução local no Windows
+
+Requisitos: Python 3.14, PostgreSQL 17 e Git.
 
 ```powershell
 py -3.14 -m venv .venv
@@ -45,76 +58,126 @@ py -3.14 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 ```
 
-Se ainda nao existir .env:
-
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Edite .env localmente. Configure DB_PASSWORD com a senha de foodagent_app.
-Nunca versione esse arquivo. A chave DeepSeek pode permanecer vazia para usar
-a API de pedidos e os testes.
-
-No pgAdmin, crie o usuario foodagent_app com login e sem privilegios administrativos.
-Crie o banco foodagent com owner postgres. Conectado a foodagent como postgres,
-execute sql/001_criar_pedidos.sql uma vez. Mais detalhes em
-[Configuracao dos testes PostgreSQL](docs/testes-postgresql.md).
-
-Inicie a API:
+Configure `DB_PASSWORD` somente no `.env`. Crie `foodagent_app` sem
+privilégios administrativos, crie o banco `foodagent` e execute
+[sql/001_criar_pedidos.sql](sql/001_criar_pedidos.sql) como `postgres`.
 
 ```powershell
 .\.venv\Scripts\python.exe -m uvicorn api:app --reload --host 127.0.0.1 --port 8000
 ```
 
-- Documentacao: http://127.0.0.1:8000/docs
-- Saude do processo: http://127.0.0.1:8000/health
-- Pedido existente: http://127.0.0.1:8000/pedidos/PED-001
-- Pedido inexistente: http://127.0.0.1:8000/pedidos/PED-999
+Em outro terminal:
 
-/health confirma o processo, nao a disponibilidade do banco. Para parar, use Ctrl+C.
+```powershell
+.\.venv\Scripts\streamlit.exe run app_streamlit.py
+```
 
-## Testes
+- API: http://127.0.0.1:8000/docs
+- Interface: http://127.0.0.1:8501
 
-Sem depender do banco:
+## Exemplo de chat
+
+```powershell
+$body = @{ mensagem = "Como funciona atraso na entrega?" } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/chat -ContentType application/json -Body $body
+```
+
+A resposta contém texto, intenção, fontes, indicação de revisão humana e request ID.
+
+## DeepSeek
+
+A geração por LLM é opcional. Para habilitar, defina no `.env`:
+
+```dotenv
+DEEPSEEK_ENABLED=true
+DEEPSEEK_API_KEY=
+```
+
+Sem chave, saldo ou disponibilidade, o RAG usa um fallback determinístico.
+Nenhum teste automatizado consome créditos. Nunca versione a chave.
+
+## Testes e avaliação
+
+Testes sem banco real:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-Com o banco de testes previamente preparado:
+Suíte completa, com `foodagent_test` preparado:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q --integration
 ```
 
-A etapa atual foi validada localmente com **36 testes aprovados**:
-29 sem banco e 7 de integracao PostgreSQL. A execucao padrao ignora explicitamente
-os 7 testes reais. Veja [instrucoes e protecoes](docs/testes-postgresql.md).
+Avaliação funcional:
 
-## DeepSeek
+```powershell
+.\.venv\Scripts\python.exe avaliar.py
+```
 
-testar_deepseek.py realiza uma chamada real e pode consumir creditos.
-A chave deve existir somente no .env ou no ambiente do processo.
-A integracao real ja retornou erro controlado de saldo insuficiente;
-a geracao real de uma resposta ainda depende de creditos na conta.
-Os testes automatizados nao acessam a DeepSeek.
+Validação local mais recente: **53 testes aprovados** e **4/4 cenários de
+avaliação aprovados**. A CI repete testes unitários e de integração em um
+PostgreSQL 17 efêmero. Veja [testes PostgreSQL](docs/testes-postgresql.md).
 
-## Decisoes de engenharia
+## Docker
 
-- Modelos de resposta separados em schemas.py.
-- Repositorios separados das rotas e substituiveis por dependencia.
-- SQL parametrizado para entradas externas.
-- Erros internos e credenciais nao aparecem nas respostas da API.
-- Banco de testes separado, com validacao explicita do destino.
-- Dados e acoes exclusivamente ficticios.
+```powershell
+docker compose up --build
+```
 
-## Proximas etapas
+O Compose inicia PostgreSQL, API e Streamlit. Credenciais declaradas nele são
+fictícias e exclusivas do ambiente local. A imagem também é publicada no GHCR
+pela CI. Consulte [deploy](docs/deploy.md).
 
-- Ferramentas para consultar pedidos e simular acoes.
-- RAG com politicas ficticias, embeddings e recuperacao.
-- Orquestracao do agente com LangGraph.
-- Avaliacao de respostas, seguranca e observabilidade.
-- Docker, interface Streamlit, deploy e documentacao final.
+## Decisões de engenharia
 
-Ainda nao e um servico de producao: autenticacao, limites de uso, migrations,
-pool de conexoes e deploy serao tratados em etapas posteriores.
+- Dependências do FastAPI permitem substituir repositórios nos testes.
+- SQL parametrizado e usuário de banco com privilégio mínimo.
+- RAG local com embedding por hashing normalizado e fontes rastreáveis.
+- LangGraph torna roteamento e nós do agente explícitos.
+- DeepSeek opcional com timeout, erros controlados e fallback.
+- Logs não armazenam o corpo das mensagens.
+- Request IDs conectam cliente, resposta e logs.
+- Banco de integração separado e protegido por validação de nome.
+
+## Estrutura
+
+```text
+api.py                  API e endpoints
+agente.py               grafo LangGraph
+rag.py                   recuperação e embeddings
+ferramentas.py           ferramentas e ações simuladas
+repositorio_postgres.py  persistência
+seguranca.py             guardrails e mascaramento
+observabilidade.py       logs e métricas
+app_streamlit.py         interface
+evals/                   conjunto de avaliação
+tests/                   testes unitários e de integração
+docs/                    arquitetura, segurança e deploy
+sql/                     preparação dos bancos
+```
+
+## Limites conhecidos
+
+Este é um portfólio, não um serviço de produção. O embedding local prioriza
+reprodutibilidade e baixo custo; produção exigiria comparação com modelos
+semânticos. Métricas são locais ao processo. Autenticação, autorização,
+rate limiting distribuído, migrations completas, pool de conexões, secret
+manager e testes de carga são evoluções de produção.
+
+## Documentação
+
+- [Arquitetura](docs/arquitetura.md)
+- [Avaliação, segurança e observabilidade](docs/avaliacao-seguranca.md)
+- [Testes PostgreSQL](docs/testes-postgresql.md)
+- [Deploy](docs/deploy.md)
+- [Apresentação do portfólio](docs/apresentacao-github.md)
+
+## Licença
+
+MIT. Consulte [LICENSE](LICENSE).

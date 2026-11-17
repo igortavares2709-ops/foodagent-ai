@@ -13,7 +13,9 @@ def pytest_addoption(parser):
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--integration"):
         return
-    ignorar = pytest.mark.skip(reason="Use --integration para testar o PostgreSQL real.")
+    ignorar = pytest.mark.skip(
+        reason="Use --integration para testar o PostgreSQL real."
+    )
     for item in items:
         if "integration" in item.keywords:
             item.add_marker(ignorar)

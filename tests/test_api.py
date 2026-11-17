@@ -6,6 +6,8 @@ import pytest
 
 from api import app, obter_buscador
 from repositorio_pedidos import buscar_pedido
+
+
 def test_falha_no_banco_retorna_503():
     def buscar_com_falha(pedido_id):
         raise psycopg.OperationalError("Falha simulada.")
@@ -18,12 +20,6 @@ def test_falha_no_banco_retorna_503():
     assert resposta.json() == {
         "detail": "Consulta de pedidos temporariamente indisponível."
     }
-
-import httpx
-import pytest
-
-from api import app, obter_buscador
-from repositorio_pedidos import buscar_pedido
 
 
 @pytest.fixture(autouse=True)

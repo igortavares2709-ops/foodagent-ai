@@ -44,9 +44,7 @@ def test_retorna_none_para_pedido_inexistente(cursor_simulado):
 
 
 def test_falha_no_banco_nao_vira_pedido_inexistente(cursor_simulado):
-    cursor_simulado.execute.side_effect = psycopg.OperationalError(
-        "Falha simulada."
-    )
+    cursor_simulado.execute.side_effect = psycopg.OperationalError("Falha simulada.")
 
     with pytest.raises(psycopg.OperationalError):
         buscar_pedido_postgres("PED-001")

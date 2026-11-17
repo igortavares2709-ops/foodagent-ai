@@ -1,6 +1,5 @@
 from schemas import PedidoResponse
 
-
 _PEDIDOS_FICTICIOS = {
     "PED-001": PedidoResponse(id="PED-001", status="em preparo"),
     "PED-002": PedidoResponse(id="PED-002", status="entregue"),

@@ -11,7 +11,7 @@ permissions:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:17
@@ -28,12 +28,12 @@ jobs:
     env:
       APP_ENV: test
       LOG_LEVEL: INFO
+      DEEPSEEK_ENABLED: "false"
       DB_HOST: 127.0.0.1
       DB_PORT: "5432"
       DB_NAME: foodagent_test
       DB_TEST_NAME: foodagent_test
       DB_USER: foodagent_app
-      # Credenciais ficticias, usadas apenas no servico efemero deste job.
       DB_PASSWORD: ci-app-ephemeral-only
       CI_POSTGRES_PASSWORD: ci-admin-ephemeral-only
     steps:
@@ -44,7 +44,15 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: python -m pip install -r requirements-dev.txt
+      - name: Lint and formatting
+        run: |
+          python -m ruff check . --select E,F,I,B,UP
+          python -m ruff format --check .
+      - name: Compile
+        run: python -m compileall -q . -x '.venv|.git'
       - name: Prepare isolated PostgreSQL
         run: python scripts/preparar_ci.py
-      - name: Run unit and integration tests
+      - name: Unit and integration tests
         run: python -m pytest -q --integration
+      - name: Agent evaluation
+        run: python avaliar.py

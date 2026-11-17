@@ -61,13 +61,12 @@ def test_api_rejeita_id_invalido_com_banco_configurado():
 
 @pytest.mark.usefixtures("banco_teste")
 def test_usuario_aplicacao_tem_apenas_leitura_na_tabela():
-    with abrir_conexao() as conexao:
-        with conexao.cursor() as cursor:
-            cursor.execute(
-                "SELECT has_table_privilege(current_user, 'public.pedidos', 'SELECT'), "
-                "has_table_privilege(current_user, 'public.pedidos', 'INSERT'), "
-                "has_table_privilege(current_user, 'public.pedidos', 'UPDATE'), "
-                "has_table_privilege(current_user, 'public.pedidos', 'DELETE'), "
-                "(SELECT rolsuper FROM pg_roles WHERE rolname = current_user)"
-            )
-            assert cursor.fetchone() == (True, False, False, False, False)
+    with abrir_conexao() as conexao, conexao.cursor() as cursor:
+        cursor.execute(
+            "SELECT has_table_privilege(current_user, 'public.pedidos', 'SELECT'), "
+            "has_table_privilege(current_user, 'public.pedidos', 'INSERT'), "
+            "has_table_privilege(current_user, 'public.pedidos', 'UPDATE'), "
+            "has_table_privilege(current_user, 'public.pedidos', 'DELETE'), "
+            "(SELECT rolsuper FROM pg_roles WHERE rolname = current_user)"
+        )
+        assert cursor.fetchone() == (True, False, False, False, False)

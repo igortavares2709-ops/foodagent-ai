@@ -6,13 +6,12 @@ from schemas import PedidoResponse
 
 def buscar_pedido_postgres(pedido_id: str) -> PedidoResponse | None:
     """Consulta um pedido no PostgreSQL usando parâmetros seguros."""
-    with abrir_conexao() as conexao:
-        with conexao.cursor() as cursor:
-            cursor.execute(
-                "SELECT id, status FROM public.pedidos WHERE id = %s",
-                (pedido_id,),
-            )
-            registro = cursor.fetchone()
+    with abrir_conexao() as conexao, conexao.cursor() as cursor:
+        cursor.execute(
+            "SELECT id, status FROM public.pedidos WHERE id = %s",
+            (pedido_id,),
+        )
+        registro = cursor.fetchone()
 
     if registro is None:
         return None

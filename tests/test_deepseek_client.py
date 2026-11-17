@@ -10,9 +10,7 @@ def test_retorna_texto_da_resposta():
         return httpx.Response(
             200,
             json={
-                "choices": [
-                    {"message": {"content": "  Pedido fictício em preparo.  "}}
-                ]
+                "choices": [{"message": {"content": "  Pedido fictício em preparo.  "}}]
             },
         )
 
@@ -36,9 +34,7 @@ def test_retorna_texto_da_resposta():
     ],
 )
 def test_trata_erros_http(codigo, mensagem):
-    transporte = httpx.MockTransport(
-        lambda request: httpx.Response(codigo)
-    )
+    transporte = httpx.MockTransport(lambda request: httpx.Response(codigo))
 
     with httpx.Client(transport=transporte) as cliente:
         with pytest.raises(ErroDeepSeek, match=mensagem):

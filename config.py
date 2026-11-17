@@ -13,9 +13,7 @@ def carregar_configuracao() -> tuple[str, str]:
     nivel_log = os.getenv("LOG_LEVEL", "INFO").strip().upper()
 
     if ambiente not in {"development", "test", "production"}:
-        raise ValueError(
-            "APP_ENV deve ser development, test ou production."
-        )
+        raise ValueError("APP_ENV deve ser development, test ou production.")
 
     if nivel_log not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
         raise ValueError("LOG_LEVEL contém um nível inválido.")

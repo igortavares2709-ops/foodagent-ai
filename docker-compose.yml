@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: foodagent
+      POSTGRES_USER: foodagent_app
+      POSTGRES_PASSWORD: local-compose-only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U foodagent_app -d foodagent"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/003_docker_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+
+  api:
+    build: .
+    environment:
+      APP_ENV: development
+      LOG_LEVEL: INFO
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: foodagent
+      DB_USER: foodagent_app
+      DB_PASSWORD: local-compose-only
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  ui:
+    build: .
+    command: ["streamlit", "run", "app_streamlit.py", "--server.address=0.0.0.0"]
+    environment:
+      FOODAGENT_API_URL: http://api:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
