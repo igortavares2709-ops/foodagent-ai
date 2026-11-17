@@ -9,6 +9,14 @@ avaliação automatizada, segurança, observabilidade, Streamlit e Docker.
 
 Projeto independente, com dados e ações fictícios, sem vínculo oficial com o iFood.
 
+## Demo pública
+
+- [Interface Streamlit](https://foodagent-ai-igortavares2709.onrender.com)
+- [API e documentação OpenAPI](https://foodagent-api-igortavares2709.onrender.com/docs)
+
+> Os serviços usam o plano gratuito do Render. O primeiro acesso após um período
+> sem uso pode levar alguns segundos enquanto a instância é iniciada.
+
 ![Interface Streamlit do FoodAgent AI](docs/images/foodagent-demo.png)
 
 ## Demonstrações

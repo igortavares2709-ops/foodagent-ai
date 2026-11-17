@@ -15,14 +15,21 @@ As credenciais do Compose são fictícias e exclusivas do ambiente local.
 
 ## Render
 
-1. Faça fork ou use o repositório no GitHub.
-2. No Render, escolha New > Blueprint.
-3. Selecione o repositório e confirme o render.yaml.
-4. Após o primeiro deploy, execute sql/003_docker_init.sql no banco gerenciado.
-5. Configure DEEPSEEK_API_KEY como Secret somente quando houver créditos.
+Deploy público validado em 17/11/2026:
 
-O deploy real depende de uma conta Render e pode gerar custos conforme o plano.
-O endpoint /health verifica o processo; a consulta a /pedidos verifica o banco.
+- Interface: https://foodagent-ai-igortavares2709.onrender.com
+- API/OpenAPI: https://foodagent-api-igortavares2709.onrender.com/docs
+- Banco: PostgreSQL gerenciado, inicializado com dados fictícios.
+
+O arquivo `render.yaml` documenta a infraestrutura da API, interface e banco.
+A API usa variáveis de ambiente do Render; nenhuma credencial é versionada.
+`DEEPSEEK_ENABLED=false` mantém a demonstração funcional com fallback local,
+sem consumo de créditos.
+
+A verificação de produção cobre `/health`, `/pedidos/PED-001`, `/chat` e
+`/_stcore/health`. No plano gratuito, as instâncias podem dormir e o primeiro
+acesso pode apresentar *cold start*. O banco gratuito também possui prazo de
+expiração definido pela plataforma.
 
 ## Streamlit
 
