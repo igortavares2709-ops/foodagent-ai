@@ -1,8 +1,39 @@
 import asyncio
 
 import httpx
+import psycopg
+import pytest
 
-from api import app
+from api import app, obter_buscador
+from repositorio_pedidos import buscar_pedido
+def test_falha_no_banco_retorna_503():
+    def buscar_com_falha(pedido_id):
+        raise psycopg.OperationalError("Falha simulada.")
+
+    app.dependency_overrides[obter_buscador] = lambda: buscar_com_falha
+
+    resposta = consultar_rota("/pedidos/PED-001")
+
+    assert resposta.status_code == 503
+    assert resposta.json() == {
+        "detail": "Consulta de pedidos temporariamente indisponível."
+    }
+
+import httpx
+import pytest
+
+from api import app, obter_buscador
+from repositorio_pedidos import buscar_pedido
+
+
+@pytest.fixture(autouse=True)
+def usar_repositorio_em_memoria():
+    app.dependency_overrides[obter_buscador] = lambda: buscar_pedido
+
+    try:
+        yield
+    finally:
+        app.dependency_overrides.pop(obter_buscador, None)
 
 
 def consultar_rota(caminho):

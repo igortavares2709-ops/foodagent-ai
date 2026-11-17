@@ -1,7 +1,10 @@
+from collections.abc import Callable
 from typing import Annotated
 
-from fastapi import FastAPI, HTTPException, Path
+import psycopg
+from fastapi import Depends, FastAPI, HTTPException, Path
 
+from repositorio_postgres import buscar_pedido_postgres
 from schemas import HealthResponse, PedidoResponse
 
 
@@ -11,6 +14,12 @@ app = FastAPI(
     version="0.1.0",
 )
 
+BuscadorPedidos = Callable[[str], PedidoResponse | None]
+
+
+def obter_buscador() -> BuscadorPedidos:
+    """Define o repositório usado pela API."""
+    return buscar_pedido_postgres
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -25,12 +34,23 @@ def consultar_pedido(
         str,
         Path(pattern=r"^PED-[0-9]{3}$", description="Exemplo: PED-001"),
     ],
+    buscador: Annotated[BuscadorPedidos, Depends(obter_buscador)],
 ) -> PedidoResponse:
-    """Consulta um pedido fictício armazenado em memória."""
-    pedido = pedido = buscar_pedido(pedido_id)
+    """Consulta um pedido persistido no PostgreSQL."""
+    try:
+        pedido = buscador(pedido_id)
+    except psycopg.Error:
+        raise HTTPException(
+            status_code=503,
+            detail="Consulta de pedidos temporariamente indisponível.",
+        ) from None
+    except ValueError:
+        raise HTTPException(
+            status_code=500,
+            detail="Falha interna ao consultar o pedido.",
+        ) from None
 
     if pedido is None:
         raise HTTPException(status_code=404, detail="Pedido não encontrado.")
 
     return pedido
-from repositorio_pedidos import buscar_pedido
