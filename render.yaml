@@ -1,36 +1,52 @@
 services:
   - type: web
-    name: foodagent-api
+    name: foodagent-api-igortavares2709
     runtime: docker
     plan: free
     healthCheckPath: /health
+    initialDeployHook: python scripts/inicializar_banco.py
+    autoDeployTrigger: checksPass
     envVars:
       - key: APP_ENV
         value: production
       - key: LOG_LEVEL
         value: INFO
+      - key: DEEPSEEK_ENABLED
+        value: "false"
       - key: DB_HOST
         fromDatabase:
-          name: foodagent-db
+          name: foodagent-db-igortavares2709
           property: host
       - key: DB_PORT
         fromDatabase:
-          name: foodagent-db
+          name: foodagent-db-igortavares2709
           property: port
       - key: DB_NAME
         fromDatabase:
-          name: foodagent-db
+          name: foodagent-db-igortavares2709
           property: database
       - key: DB_USER
         fromDatabase:
-          name: foodagent-db
+          name: foodagent-db-igortavares2709
           property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: foodagent-db
+          name: foodagent-db-igortavares2709
           property: password
 
+  - type: web
+    name: foodagent-ai-igortavares2709
+    runtime: docker
+    dockerfilePath: ./Dockerfile.streamlit
+    plan: free
+    healthCheckPath: /_stcore/health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: FOODAGENT_API_URL
+        value: https://foodagent-api-igortavares2709.onrender.com
+
 databases:
-  - name: foodagent-db
+  - name: foodagent-db-igortavares2709
     plan: free
     databaseName: foodagent
+    user: foodagent_app
