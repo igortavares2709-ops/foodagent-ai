@@ -8,8 +8,8 @@ O projeto inclui Dockerfile, docker-compose.yml e render.yaml.
 docker compose up --build
 ```
 
-API: http://127.0.0.1:8000/docs  
-Interface: http://127.0.0.1:8501
+- API: http://127.0.0.1:8000/docs
+- Interface: http://127.0.0.1:8501
 
 As credenciais do Compose são fictícias e exclusivas do ambiente local.
 
